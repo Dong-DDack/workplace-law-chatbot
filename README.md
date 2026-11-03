@@ -1,6 +1,27 @@
-# 일터법
+<div align="center">
 
-> 근로기준법과 고용노동부 공식 자료를 검색해, 일하는 사람의 질문에 쉬운 말로 답하는 RAG 챗봇 프로토타입
+<h1>일터법 · v0.1.0</h1>
+
+<h3>근로기준법과 공식 자료를 찾아, 일하는 사람의 질문에 쉬운 말로 답해요</h3>
+
+<p>근거 조항과 참고 문서를 함께 보여주는 RAG 챗봇 개인 프로젝트</p>
+
+<p><a href="#로컬-실행">사용 방법</a> · <a href="#동작-구조">구조 보기</a> · <a href="#배포-상태와-gemini-약관-확인">배포 메모</a></p>
+
+<br />
+
+<img src="https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white" alt="HTML5" />
+<img src="https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white" alt="CSS3" />
+<img src="https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?style=flat-square&logo=javascript&logoColor=111111" alt="Vanilla JavaScript" />
+<img src="https://img.shields.io/badge/Node.js-22%2B-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js 22 or later" />
+<img src="https://img.shields.io/badge/Express-5-000000?style=flat-square&logo=express&logoColor=white" alt="Express 5" />
+<img src="https://img.shields.io/badge/Google-Gemini%20API-8E75B2?style=flat-square&logo=googlegemini&logoColor=white" alt="Google Gemini API" />
+<img src="https://img.shields.io/badge/Supabase-PostgreSQL%20%2B%20pgvector-3FCF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase PostgreSQL and pgvector" />
+<img src="https://img.shields.io/badge/PDF.js-Text%20extraction-E5322D?style=flat-square&logo=adobeacrobatreader&logoColor=white" alt="PDF.js text extraction" />
+
+</div>
+
+---
 
 **현재 상태: 로컬 개발·제한 테스트 단계**  
 실제 서비스 배포는 Gemini API 약관의 사용 범위를 확인한 뒤 결정합니다.
@@ -140,6 +161,15 @@ Google의 [Gemini API 추가 약관](https://ai.google.dev/gemini-api/terms)은 
 └── render.yaml            # Render 배포 준비 설정
 ```
 
-## 기술 구성
+## 기술 스택과 역할
 
-`Node.js` · `Express` · `Gemini API` · `Supabase PostgreSQL` · `pgvector` · `PDF.js`
+| 기술 | 프로젝트에서 하는 일 |
+| --- | --- |
+| HTML · CSS · Vanilla JavaScript | 채팅 UI, 대화 목록, 참고 자료 화면 |
+| Node.js · Express | 웹 서버와 `/api/chat`, 자료 조회 API |
+| Gemini API | 질문·문서 임베딩과 근거 기반 답변 생성 |
+| Supabase PostgreSQL · pgvector | 문서 청크와 벡터 저장, 유사도 검색 |
+| PDF.js | PDF에서 텍스트와 페이지 정보를 추출 |
+| 직접 구현한 RAG 흐름 | 검색 결과를 프롬프트에 넣어 근거 중심 답변 구성 |
+
+> 현재는 LangChain을 사용하지 않습니다. 검색·생성 흐름을 직접 연결해 RAG의 각 단계를 익히는 구성입니다.
