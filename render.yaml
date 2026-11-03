@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: ilteobeom-private-preview
+    runtime: node
+    plan: free
+    buildCommand: cd main && npm ci
+    startCommand: cd main && npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.13.0
+      - key: NODE_ENV
+        value: production
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.5-flash-lite
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: APP_ACCESS_USERNAME
+        value: tester
+      - key: APP_ACCESS_PASSWORD
+        sync: false

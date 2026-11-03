@@ -105,7 +105,7 @@ async function extractPdfPages(pdfPath) {
   return pages;
 }
 
-export async function loadLaborLawPreview(lawDirectory) {
+async function loadLaborLawData(lawDirectory) {
   const files = await fs.readdir(lawDirectory);
   const pdfName = files.find((name) => name.toLowerCase().endsWith(".pdf") && name.includes("근로기준법"));
   if (!pdfName) {
@@ -141,10 +141,26 @@ export async function loadLaborLawPreview(lawDirectory) {
     extractionNote: pagesWithoutText.length
       ? "글자가 거의 추출되지 않은 페이지가 있습니다. 스캔 페이지일 수 있어 OCR 확인이 필요합니다."
       : "텍스트가 추출됐습니다. 표와 조항 연결이 정확한지는 원본과 대조해 주세요.",
+    chunks,
     sampleChunks: chunks.slice(0, 8),
     pageSamples: pages
       .filter((page) => page.text.length > 0)
       .slice(0, 3)
       .map((page) => ({ pageNumber: page.pageNumber, text: page.text.slice(0, 700) })),
   };
+}
+
+export async function loadLaborLawChunks(lawDirectory) {
+  const data = await loadLaborLawData(lawDirectory);
+  return {
+    fileName: data.fileName,
+    pageCount: data.pageCount,
+    articleCount: data.articleCount,
+    chunks: data.chunks,
+  };
+}
+
+export async function loadLaborLawPreview(lawDirectory) {
+  const { chunks, ...preview } = await loadLaborLawData(lawDirectory);
+  return preview;
 }
