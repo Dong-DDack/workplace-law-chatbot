@@ -86,7 +86,13 @@ flowchart LR
 - Supabase 프로젝트와 필요한 테이블·검색 함수
 - Google AI Studio에서 발급한 Gemini API 키
 
-### 1. 환경변수 파일 준비하기
+### 1. Supabase 스키마 만들기
+
+새 Supabase 프로젝트를 사용하는 경우 Dashboard의 **SQL Editor**에서 저장소의 [`supabase/schema.sql`](supabase/schema.sql) 내용을 열어 전체 실행합니다. 문서 테이블, 청크 테이블, 벡터 인덱스, `match_law_chunks` 검색 함수가 생성됩니다.
+
+> 이 프로젝트의 Gemini 임베딩은 **768차원**입니다. 다른 차원의 임베딩으로 바꾸면 SQL의 벡터 차원도 맞춰야 합니다.
+
+### 2. 환경변수 파일 준비하기
 
 PowerShell에서 저장소 루트에서 아래 명령을 실행합니다. 이미 `main/.env`를 만들어 두었다면 복사 단계는 건너뛰고 값을 확인하면 됩니다.
 
@@ -109,7 +115,7 @@ APP_ACCESS_PASSWORD=
 
 `SUPABASE_SERVICE_ROLE_KEY`는 데이터베이스에 높은 권한을 가진 비밀키입니다. 브라우저 코드, GitHub, 공개 채팅에 넣지 마세요. `.env`는 Git에서 제외되지만, 커밋 전에 `git status`로 포함되지 않았는지 확인하세요.
 
-### 2. 패키지 설치하기
+### 3. 패키지 설치하기
 
 처음 실행하거나 의존성 설치가 필요할 때 한 번 실행합니다.
 
@@ -119,23 +125,23 @@ npm.cmd ci
 
 Windows PowerShell에서 `npm` 실행 정책 오류가 나면 `npm` 대신 `npm.cmd`를 사용하면 됩니다.
 
-### 3. 앱 실행하기
+### 4. 내 Supabase에 자료 임베딩하기
+
+처음 연결하는 Supabase에는 문서가 아직 없으므로, 패키지 설치 후 아래 명령을 한 번 실행해 PDF와 FAQ를 본인 DB에 저장합니다. 자료를 추가하거나 수정한 경우에도 다시 실행합니다.
+
+```powershell
+npm.cmd run ingest
+```
+
+임베딩에는 본인의 Gemini API 사용량이 들며 무료 사용량·분당 요청 제한이 적용될 수 있습니다. 이미 자료가 들어 있는 Supabase를 연결했다면 다시 실행할 필요가 없습니다.
+
+### 5. 앱 실행하기
 
 ```powershell
 npm.cmd start
 ```
 
 브라우저에서 [http://localhost:3000](http://localhost:3000)을 엽니다. 실행을 마치려면 PowerShell에서 `Ctrl+C`를 누릅니다.
-
-## 자료를 추가하거나 바꾼 경우
-
-현재 등록 자료의 임베딩은 Supabase에 저장되어 있으므로, **일반적인 로컬 실행에는 ingest를 다시 할 필요가 없습니다.** 새 PDF/FAQ를 추가하거나 내용을 바꿨을 때에만 실행하세요.
-
-```powershell
-npm.cmd run ingest
-```
-
-이 작업은 Gemini 임베딩 API 요청을 발생시키며, 무료 사용량과 분당 요청 제한을 소모할 수 있습니다. `법령/` 폴더의 자료와 `main/data/labor-law-faq.json`을 기준으로 처리합니다.
 
 ## 데이터와 개인정보
 
@@ -153,6 +159,8 @@ npm.cmd run ingest
 ```text
 .
 ├── 법령/                  # 원본 PDF 자료
+├── supabase/
+│   └── schema.sql         # Supabase 테이블과 벡터 검색 함수
 ├── main/
 │   ├── data/              # FAQ 원본 데이터
 │   ├── scripts/           # 문서 수집·임베딩 실행 스크립트
