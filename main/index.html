@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f6f7f9" />
+    <title>일터법 — 근로기준법 길잡이</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-row">
+          <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+          <span class="brand-name">일터법</span>
+          <button class="icon-button sidebar-toggle" aria-label="사이드바 접기" title="사이드바 접기">‹</button>
+        </div>
+
+        <button class="new-chat" id="newChat"><span class="plus-icon">＋</span> 새 질문</button>
+        <div class="side-label">워크스페이스</div>
+        <button class="nav-item active"><span class="nav-icon">◉</span><span>근로기준법 길잡이</span><span class="nav-dot"></span></button>
+        <button class="nav-item muted"><span class="nav-icon">▤</span><span>자료 라이브러리</span></button>
+
+        <div class="sidebar-spacer"></div>
+        <div class="source-panel">
+          <div class="source-heading"><span>참고 자료</span><button class="tiny-add" id="addSource" aria-label="자료 추가">＋</button></div>
+          <div class="document-card">
+            <div class="pdf-icon">PDF</div>
+            <div class="document-info"><strong>근로기준법</strong><small>현행 법령 · 2026.10.08</small></div>
+            <span class="ready-check">✓</span>
+          </div>
+          <div class="source-status"><span class="status-pulse"></span> PDF 파일 확인됨 · 추출 전</div>
+          <button class="preview-source-button" id="previewSource">조문 추출 미리보기 <span>↗</span></button>
+        </div>
+
+        <div class="profile-row">
+          <div class="avatar">나</div>
+          <div class="profile-copy"><strong>내 작업공간</strong><small>개인 프로젝트</small></div>
+          <button class="icon-button more-button" aria-label="더 보기">···</button>
+        </div>
+      </aside>
+
+      <main class="main-area">
+        <header class="topbar">
+          <div class="mobile-brand"><div class="brand-mark"><span></span><span></span><span></span></div><b>일터법</b></div>
+          <div class="project-select"><span class="project-symbol">⌂</span><span>근로기준법 길잡이</span><span class="chevron">⌄</span></div>
+          <div class="top-actions"><span class="prototype-pill"><i></i> 프로토타입</span><button class="help-button" title="안내">?</button></div>
+        </header>
+
+        <section class="chat-scroll" id="chatScroll">
+          <div class="welcome" id="welcome">
+            <div class="welcome-kicker"><span class="kicker-line"></span> 내 문서로 찾는 노동법 <span class="kicker-line"></span></div>
+            <div class="hero-icon"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M11 9.5A4.5 4.5 0 0 1 15.5 5H37v31H15.5a4.5 4.5 0 0 0-4.5 4.5v-31Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M11 40.5a4.5 4.5 0 0 1 4.5-4.5H37M18 14h12M18 20h12M18 26h8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+            <h1>일하는 사람을 위한<br /><em>법률 길잡이</em></h1>
+            <p class="welcome-copy">근로기준법에서 근거를 찾아<br class="mobile-break" /> 쉬운 말로 설명해드려요.</p>
+
+            <div class="suggestion-grid">
+              <button class="suggestion-card" data-question="하루 8시간 일하면 휴게시간은 얼마나 줘야 해?">
+                <span class="suggestion-icon mint">◷</span><span><strong>휴게시간</strong><small>하루 8시간 근무 기준은?</small></span><span class="suggestion-arrow">↗</span>
+              </button>
+              <button class="suggestion-card" data-question="연차 유급휴가는 어떻게 생겨?">
+                <span class="suggestion-icon peach">✳</span><span><strong>연차 유급휴가</strong><small>발생 기준을 알아보기</small></span><span class="suggestion-arrow">↗</span>
+              </button>
+              <button class="suggestion-card" data-question="임금을 정해진 날에 받지 못하면 어떻게 해?">
+                <span class="suggestion-icon lavender">₩</span><span><strong>임금 지급</strong><small>월급이 늦어졌을 때</small></span><span class="suggestion-arrow">↗</span>
+              </button>
+              <button class="suggestion-card" data-question="근로계약서를 꼭 써야 해?">
+                <span class="suggestion-icon blue">▤</span><span><strong>근로계약서</strong><small>작성하고 받아야 할 내용</small></span><span class="suggestion-arrow">↗</span>
+              </button>
+            </div>
+            <div class="demo-note"><span>✦</span> 답변은 시안용 예시예요. 문서 추출 결과는 참고 자료에서 확인할 수 있어요.</div>
+          </div>
+
+          <div class="messages" id="messages" aria-live="polite"></div>
+        </section>
+
+        <div class="composer-wrap">
+          <div class="composer" id="composer">
+            <textarea id="questionInput" rows="1" placeholder="근로기준법에 대해 물어보세요" aria-label="질문 입력"></textarea>
+            <div class="composer-bottom"><div class="composer-hint"><span class="sparkle">✦</span> 법령 근거와 함께 답변해요</div><button class="send-button" id="sendButton" aria-label="질문 보내기" disabled><svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0 6 6m-6-6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+          </div>
+          <p class="disclaimer">일터법은 학습용 프로토타입입니다. 개별 사건의 법률 자문이나 공식 해석을 대신하지 않습니다.</p>
+        </div>
+      </main>
+    </div>
+    <div class="toast" id="toast" role="status"></div>
+    <div class="preview-overlay" id="previewOverlay" hidden>
+      <section class="preview-dialog" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+        <header class="preview-header"><div><div class="preview-eyebrow">문서 처리 · 1단계</div><h2 id="previewTitle">조문 추출 미리보기</h2></div><button class="preview-close" id="closePreview" aria-label="닫기">×</button></header>
+        <div class="preview-content" id="previewContent"><div class="preview-loading"><span class="loading-spinner"></span> PDF에서 텍스트와 조문을 읽고 있어요…</div></div>
+      </section>
+    </div>
+    <script src="./app.js"></script>
+  </body>
+</html>
