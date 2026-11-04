@@ -190,7 +190,7 @@ npm.cmd start
 
 Google 인증 플랫폼의 **대상** 상태가 **테스트**이면 등록된 테스트 사용자만 로그인할 수 있습니다. 모든 Google 계정이 사용하게 하려면 **앱 게시**로 상태를 프로덕션으로 바꿔야 합니다. Google 로그인만을 위한 기본 프로필 정보 외에 민감하거나 제한된 OAuth 범위를 추가하면 별도 검증이 요구될 수 있습니다. [Google 앱 대상 안내](https://support.google.com/cloud/answer/15549945?hl=ko)
 
-앱은 기본적으로 계정당 하루 **10회**, 모든 테스터 합산 하루 **30회** 질문을 허용합니다. `APP_DAILY_CHAT_LIMIT`과 `APP_GLOBAL_DAILY_CHAT_LIMIT`으로 조정할 수 있습니다. Gemini 프로젝트의 자체 분당·일일 API 한도가 더 낮으면 그 제한이 먼저 적용됩니다. Google OAuth와 앱 한도는 접근과 사용량을 관리하는 기능이며, Gemini API 약관의 사용 범위나 연령 조건을 바꾸지는 않습니다. 배포 전에 [Gemini API 추가 약관](https://ai.google.dev/gemini-api/terms)을 확인하고, 생성 답변을 법률 자문으로 의존하지 않도록 안내하세요.
+앱은 기본적으로 계정당 하루 **10회**, 전체 합산 하루 **30회** 질문을 허용합니다. `APP_DAILY_CHAT_LIMIT`과 `APP_GLOBAL_DAILY_CHAT_LIMIT`으로 조정할 수 있습니다. Gemini 프로젝트의 자체 분당·일일 API 한도가 더 낮으면 그 제한이 먼저 적용됩니다. Google OAuth와 앱 한도는 접근과 사용량을 관리하는 기능이며, Gemini API 약관의 사용 범위나 연령 조건을 바꾸지는 않습니다. 배포 전에 [Gemini API 추가 약관](https://ai.google.dev/gemini-api/terms)을 확인하고, 생성 답변을 법률 자문으로 의존하지 않도록 안내하세요.
 
 ## 디렉터리 구조
 

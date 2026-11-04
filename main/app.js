@@ -19,7 +19,7 @@ let activeConversationId = null;
 function showAuthGate(message) {
   authGate.hidden = false;
   appShell.hidden = true;
-  authMessage.textContent = message || "승인된 Google 계정으로 로그인해 주세요.";
+  authMessage.textContent = message || "Google 계정으로 로그인해 주세요.";
 }
 
 async function authenticatedFetch(url, options = {}) {
@@ -60,7 +60,7 @@ async function initializeAuthentication() {
     const { data: { session }, error } = await authClient.auth.getSession();
     if (error) throw error;
     if (!session) {
-      showAuthGate("초대된 Google 계정으로 로그인해 주세요.");
+      showAuthGate("Google 계정으로 로그인해 주세요.");
       return;
     }
 
