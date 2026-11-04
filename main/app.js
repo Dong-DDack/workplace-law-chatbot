@@ -70,7 +70,12 @@ async function initializeAuthentication() {
     const result = await verification.json();
     if (!verification.ok) {
       await authClient.auth.signOut();
-      showAuthGate(result.error || "이 계정은 아직 초대되지 않았어요.");
+      const accessDenied = verification.status === 403;
+      const message = result.error || "이 계정은 아직 초대되지 않았어요.";
+      showAuthGate(message);
+      if (accessDenied) {
+        window.alert("이 Google 계정은 아직 초대 목록에 없어 사용할 수 없습니다.\n\n앱 관리자에게 이 계정을 테스터로 추가해 달라고 요청해 주세요.");
+      }
       return;
     }
 
