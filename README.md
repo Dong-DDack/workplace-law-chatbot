@@ -34,7 +34,7 @@
 - PDF와 FAQ 자료를 검색해 질문에 맞는 근거를 찾는 RAG
 - 답변에 참고 자료, 조문 정보, PDF 페이지 표시
 - 조문 추출 미리보기와 참고 자료 라이브러리
-- 초대된 Google 계정만 접근 가능하고 사용자별 일일 질문 수 제한
+- Google 계정 로그인과 계정별·전체 일일 질문 수 제한 (이메일 허용 목록은 선택 사항)
 - 대화 목록과 메시지를 계정별로 현재 브라우저에 저장
 - Supabase PostgreSQL과 pgvector를 이용한 문서 청크 저장 및 유사도 검색
 
@@ -129,12 +129,12 @@ GEMINI_MODEL=gemini-3.5-flash-lite
 SUPABASE_URL=https://프로젝트ID.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=본인의_Supabase_Secret_key
 SUPABASE_PUBLISHABLE_KEY=본인의_Supabase_Publishable_key
-APP_ALLOWED_EMAILS=테스터@gmail.com,다른테스터@gmail.com
+APP_ALLOWED_EMAILS=
 APP_DAILY_CHAT_LIMIT=10
 APP_GLOBAL_DAILY_CHAT_LIMIT=30
 ```
 
-`SUPABASE_SERVICE_ROLE_KEY`는 서버 전용 Secret key입니다. 브라우저 코드, GitHub, 공개 채팅에 올리지 마세요. `SUPABASE_PUBLISHABLE_KEY`는 브라우저 로그인 설정에 사용되는 공개 키입니다. `APP_ALLOWED_EMAILS`에는 로그인 가능한 이메일을 쉼표로 구분해 적습니다. `.env`는 Git에서 제외되지만, 커밋 전에 `git status`로 포함되지 않았는지 확인하세요.
+`SUPABASE_SERVICE_ROLE_KEY`는 서버 전용 Secret key입니다. 브라우저 코드, GitHub, 공개 채팅에 올리지 마세요. `SUPABASE_PUBLISHABLE_KEY`는 브라우저 로그인 설정에 사용되는 공개 키입니다. `APP_ALLOWED_EMAILS`를 비워 두면 Google 계정으로 로그인한 사용자를 모두 허용하고, 특정 계정만 허용하려면 이메일을 쉼표로 구분해 입력합니다. `.env`는 Git에서 제외되지만, 커밋 전에 `git status`로 포함되지 않았는지 확인하세요.
 
 ### 5. 패키지 설치하기
 
@@ -184,9 +184,11 @@ npm.cmd start
 - 새 PDF·FAQ를 추가해도 DB에 자동 반영되지 않습니다. 파일을 추가한 뒤 `npm.cmd run ingest`를 실행해야 합니다.
 - 스캔본이나 표·복잡한 서식은 텍스트 추출과 검색이 부정확할 수 있습니다. 원문 PDF와 답변에 표시된 근거를 대조하세요.
 
-## Render 초대 테스트 배포
+## Render 배포
 
-저장소에는 Render Blueprint 설정이 있습니다. Render에서 이 저장소를 연결해 서비스를 만들고, `render.yaml`에 정의된 환경변수를 대시보드에서 입력하세요. `APP_ALLOWED_EMAILS`에는 허용할 테스터 이메일을, `SUPABASE_PUBLISHABLE_KEY`에는 Supabase Publishable key를 넣어야 합니다. Google OAuth의 Supabase callback 주소와 Redirect URLs에도 Render가 제공한 실제 서비스 주소를 추가해야 로그인이 완료됩니다.
+저장소에는 Render Blueprint 설정이 있습니다. Render에서 이 저장소를 연결해 서비스를 만들고, `render.yaml`에 정의된 비밀 환경변수를 대시보드에서 입력하세요. `APP_ALLOWED_EMAILS`는 선택 사항입니다. 비워 두면 Google 계정 로그인을 통과한 사용자를 모두 허용하고, 이메일을 입력하면 해당 계정만 허용합니다. `SUPABASE_PUBLISHABLE_KEY`에는 Supabase Publishable key를 넣어야 합니다. Google OAuth의 JavaScript 원본에는 Render 주소를, Supabase의 Site URL과 Redirect URLs에도 실제 Render 주소를 추가해야 로그인이 완료됩니다.
+
+Google 인증 플랫폼의 **대상** 상태가 **테스트**이면 등록된 테스트 사용자만 로그인할 수 있습니다. 모든 Google 계정이 사용하게 하려면 **앱 게시**로 상태를 프로덕션으로 바꿔야 합니다. Google 로그인만을 위한 기본 프로필 정보 외에 민감하거나 제한된 OAuth 범위를 추가하면 별도 검증이 요구될 수 있습니다. [Google 앱 대상 안내](https://support.google.com/cloud/answer/15549945?hl=ko)
 
 앱은 기본적으로 계정당 하루 **10회**, 모든 테스터 합산 하루 **30회** 질문을 허용합니다. `APP_DAILY_CHAT_LIMIT`과 `APP_GLOBAL_DAILY_CHAT_LIMIT`으로 조정할 수 있습니다. Gemini 프로젝트의 자체 분당·일일 API 한도가 더 낮으면 그 제한이 먼저 적용됩니다. Google OAuth와 앱 한도는 접근과 사용량을 관리하는 기능이며, Gemini API 약관의 사용 범위나 연령 조건을 바꾸지는 않습니다. 배포 전에 [Gemini API 추가 약관](https://ai.google.dev/gemini-api/terms)을 확인하고, 생성 답변을 법률 자문으로 의존하지 않도록 안내하세요.
 

@@ -20,9 +20,6 @@ const allowedEmails = new Set(
 const dailyChatLimit = Math.max(1, Number.parseInt(process.env.APP_DAILY_CHAT_LIMIT || "10", 10) || 10);
 const globalDailyChatLimit = Math.max(1, Number.parseInt(process.env.APP_GLOBAL_DAILY_CHAT_LIMIT || "30", 10) || 30);
 
-if (process.env.NODE_ENV === "production" && !allowedEmails.size) {
-  throw new Error("배포 환경에는 APP_ALLOWED_EMAILS에 로그인 허용 이메일을 설정해야 합니다.");
-}
 if (process.env.NODE_ENV === "production") {
   const missingAuthSettings = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_PUBLISHABLE_KEY", "GEMINI_API_KEY"]
     .filter((name) => !process.env[name]?.trim());
@@ -42,7 +39,7 @@ async function requireAllowedUser(request, response, next) {
     const email = user.email?.trim().toLowerCase();
     const providers = user.app_metadata?.providers || [];
     const usedGoogleProvider = user.app_metadata?.provider === "google" || providers.includes("google");
-    if (!usedGoogleProvider || !email || !allowedEmails.has(email)) {
+    if (!usedGoogleProvider || !email || (allowedEmails.size > 0 && !allowedEmails.has(email))) {
       return response.status(403).json({ error: "아직 초대되지 않은 계정이에요. 프로젝트 관리자에게 접근을 요청해 주세요." });
     }
     request.authUser = user;
