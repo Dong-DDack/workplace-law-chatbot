@@ -6,7 +6,7 @@
 
 <p>근거 조항과 참고 문서를 함께 보여주는 RAG 챗봇 개인 프로젝트</p>
 
-<p><a href="#주요-기능">주요 기능</a> · <a href="#화면-미리보기">화면 미리보기</a> · <a href="#로컬에서-실행하기">로컬에서 실행하기</a> · <a href="#기술-스택">기술 스택</a></p>
+<p><a href="https://ilteobeom-invite-preview.onrender.com">웹 앱 열기</a> · <a href="#주요-기능">주요 기능</a> · <a href="#화면-미리보기">화면 미리보기</a> · <a href="#로컬에서-실행하기">로컬에서 실행하기</a> · <a href="#배포와-로그인">배포와 로그인</a> · <a href="#기술-스택">기술 스택</a></p>
 
 <br />
 
@@ -90,8 +90,6 @@ flowchart LR
 
 ### 1. 저장소 내려받기
 
-현재 GitHub 저장소가 비공개라면 저장소 소유자에게 접근 권한을 받아야 합니다.
-
 ```powershell
 git clone https://github.com/Dong-DDack/workplace-law-chatbot.git
 cd workplace-law-chatbot
@@ -105,7 +103,15 @@ Supabase 프로젝트의 **Project URL**은 **Connect**에서, 브라우저용 *
 
 > 이 프로젝트의 Gemini 임베딩은 **768차원**입니다. 다른 차원의 임베딩으로 바꾸면 SQL의 벡터 차원도 맞춰야 합니다.
 
-Gemini API 키는 [Google AI Studio API Keys](https://aistudio.google.com/app/apikey)에서 만듭니다. Google 로그인은 [Supabase Google 로그인 설정 안내](https://supabase.com/docs/guides/auth/social-sign-in/auth-google)에 따라 설정합니다. Google Cloud에서 Web OAuth client를 만들고, Google의 Authorized redirect URI에는 Supabase가 표시하는 callback URL을 등록합니다. Client ID와 Secret은 Supabase Auth의 Google provider 설정에 넣습니다. Supabase의 Site URL과 허용 Redirect URLs에는 `http://localhost:3000` 및 배포 후 Render 주소를 등록합니다.
+Gemini API 키는 [Google AI Studio API Keys](https://aistudio.google.com/app/apikey)에서 만듭니다. Google 로그인은 [Supabase Google 로그인 설정 안내](https://supabase.com/docs/guides/auth/social-sign-in/auth-google)에 따라 설정합니다.
+
+1. Google Cloud Console에서 웹 애플리케이션 OAuth 클라이언트를 만듭니다.
+2. **승인된 리디렉션 URI**에는 Supabase Google provider 화면에 표시된 callback URL을 등록합니다. 보통 `https://<프로젝트ID>.supabase.co/auth/v1/callback` 형식입니다.
+3. Google의 Client ID와 Client Secret을 Supabase **Authentication → Providers → Google** 설정에 입력하고 Google 로그인을 활성화합니다.
+4. Supabase **Authentication → URL Configuration**의 Site URL과 Redirect URLs에 로컬 주소 `http://localhost:3000`을 등록합니다. 배포 후에는 Render 주소도 등록합니다.
+5. Google OAuth의 **승인된 JavaScript 원본**에는 `http://localhost:3000`을 등록합니다. 배포 환경에서는 `https://<Render 서비스 주소>`도 추가합니다. 이 칸에는 경로(`/`)를 붙이지 않습니다.
+
+로그인 승인에 쓰이는 Supabase callback URL과, 로그인 후 사용자가 돌아올 서비스 주소는 서로 다른 설정입니다. 자세한 항목은 [Supabase Google 로그인 안내](https://supabase.com/docs/guides/auth/social-sign-in/auth-google)와 [Supabase Redirect URL 안내](https://supabase.com/docs/guides/auth/redirect-urls)를 참고하세요.
 
 ### 3. (기존 Supabase 사용자) 사용량 SQL 반영하기
 
@@ -158,7 +164,7 @@ npm.cmd run ingest
 
 임베딩에는 본인의 Gemini API 사용량이 들며 무료 사용량·분당 요청 제한이 적용될 수 있습니다. 이미 자료가 들어 있는 Supabase를 연결했다면 다시 실행할 필요가 없습니다.
 
-수집 스크립트는 임시 안내나 보도자료로 판단한 PDF를 파일명 기준으로 건너뛸 수 있습니다. 실행 로그의 제외·건너뜀 안내와 최종 자료·청크 수를 확인하세요. PDF.js는 PDF에 들어 있는 텍스트를 추출합니다. 이미지로 스캔된 PDF는 텍스트가 빠질 수 있고, 이 프로젝트는 OCR을 자동 실행하지 않습니다. 수집 중 텍스트가 거의 없는 페이지가 안내되면 OCR 처리된 PDF를 준비해야 합니다.
+수집 스크립트는 일부 임시 안내·보도자료를 제외할 수 있습니다. 실행 로그의 제외·건너뜀 안내와 마지막 완료 메시지를 확인하세요. PDF.js는 PDF에 포함된 텍스트를 추출합니다. 이미지로 스캔된 PDF는 텍스트가 빠질 수 있고, 이 프로젝트는 OCR을 자동 실행하지 않습니다. 수집 중 텍스트가 거의 없는 페이지가 안내되면 OCR 처리된 PDF를 준비해야 합니다. `법령/`의 원본 PDF와 `main/data/labor-law-faq.json`은 본인 Supabase를 새로 채울 때 필요하므로 저장소에 포함되어 있습니다.
 
 ### 7. 앱 실행하기
 
@@ -168,15 +174,6 @@ npm.cmd start
 
 브라우저에서 [http://localhost:3000](http://localhost:3000)을 엽니다. 실행을 마치려면 PowerShell에서 `Ctrl+C`를 누릅니다.
 
-## 데이터와 개인정보
-
-- 문서 임베딩을 만들 때 추출한 문서 텍스트가 Gemini API로 전송됩니다. 질문할 때도 질문 임베딩 요청과 답변 생성 요청이 각각 발생하며, 답변 생성에는 질문과 검색된 문서 일부가 전달됩니다.
-- 대화 기록은 서버나 Supabase가 아니라 해당 브라우저의 `localStorage`에 저장됩니다. 다른 기기나 브라우저와 동기화되지 않습니다.
-- 문서 청크와 임베딩은 연결한 Supabase 프로젝트에 저장됩니다.
-- 무료 Gemini API 서비스에서는 제출한 내용과 응답이 Google 제품 개선에 사용되거나 사람 검토자가 처리할 수 있다고 약관에 안내되어 있습니다. 개인정보, 회사 기밀, 민감한 사건 내용을 입력하지 마세요.
-- 질문할 때마다 Gemini 임베딩·답변 API를 사용하므로 무료 한도 소진 후에는 요청이 실패할 수 있고, 유료 사용이면 비용이 발생할 수 있습니다.
-- Gemini API 키와 Supabase Secret key는 서버 환경변수로만 관리합니다.
-
 ## 자료 기준과 한계
 
 - 근로기준법 PDF는 저장소에 포함된 시점의 자료이며 자동으로 최신 법령으로 갱신되지 않습니다. 실제 상황에 적용하기 전에는 [국가법령정보센터](https://www.law.go.kr/)에서 현행 조문을 확인하세요.
@@ -184,13 +181,23 @@ npm.cmd start
 - 새 PDF·FAQ를 추가해도 DB에 자동 반영되지 않습니다. 파일을 추가한 뒤 `npm.cmd run ingest`를 실행해야 합니다.
 - 스캔본이나 표·복잡한 서식은 텍스트 추출과 검색이 부정확할 수 있습니다. 원문 PDF와 답변에 표시된 근거를 대조하세요.
 
-## Render 배포
+## 배포와 로그인
 
-저장소에는 Render Blueprint 설정이 있습니다. Render에서 이 저장소를 연결해 서비스를 만들고, `render.yaml`에 정의된 비밀 환경변수를 대시보드에서 입력하세요. `APP_ALLOWED_EMAILS`는 선택 사항입니다. 비워 두면 Google 계정 로그인을 통과한 사용자를 모두 허용하고, 이메일을 입력하면 해당 계정만 허용합니다. `SUPABASE_PUBLISHABLE_KEY`에는 Supabase Publishable key를 넣어야 합니다. Google OAuth의 JavaScript 원본에는 Render 주소를, Supabase의 Site URL과 Redirect URLs에도 실제 Render 주소를 추가해야 로그인이 완료됩니다.
+현재 [Render 앱](https://ilteobeom-invite-preview.onrender.com)이 실행 중이며, 저장소에는 재배포에 사용할 `render.yaml`이 있습니다. Render에서 저장소의 Blueprint를 연결하고 `render.yaml`에 `sync: false`로 표시된 비밀 환경변수를 서비스 설정에 입력합니다.
 
-Google 인증 플랫폼의 **대상** 상태가 **테스트**이면 등록된 테스트 사용자만 로그인할 수 있습니다. 모든 Google 계정이 사용하게 하려면 **앱 게시**로 상태를 프로덕션으로 바꿔야 합니다. Google 로그인만을 위한 기본 프로필 정보 외에 민감하거나 제한된 OAuth 범위를 추가하면 별도 검증이 요구될 수 있습니다. [Google 앱 대상 안내](https://support.google.com/cloud/answer/15549945?hl=ko)
+필요한 Render 환경변수는 `GEMINI_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_PUBLISHABLE_KEY`입니다. `APP_ALLOWED_EMAILS`는 선택 사항입니다. 비워 두면 Google 계정으로 로그인한 사용자를 앱에서 제한하지 않고, 이메일을 쉼표로 나열하면 그 계정만 허용합니다. 다만 Google OAuth의 사용자 대상이 **테스트** 상태라면 Google 측 테스트 사용자 제한이 별도로 적용됩니다. OAuth를 **프로덕션**으로 게시하면 Google 계정 사용자가 로그인할 수 있습니다. 테스트 모드는 최대 100명의 테스트 사용자와 7일마다 재승인이 적용될 수 있으므로 [Google 앱 대상 안내](https://support.google.com/cloud/answer/15549945?hl=ko)를 확인하세요.
 
-앱은 기본적으로 계정당 하루 **10회**, 전체 합산 하루 **30회** 질문을 허용합니다. `APP_DAILY_CHAT_LIMIT`과 `APP_GLOBAL_DAILY_CHAT_LIMIT`으로 조정할 수 있습니다. Gemini 프로젝트의 자체 분당·일일 API 한도가 더 낮으면 그 제한이 먼저 적용됩니다. Google OAuth와 앱 한도는 접근과 사용량을 관리하는 기능이며, Gemini API 약관의 사용 범위나 연령 조건을 바꾸지는 않습니다. 배포 전에 [Gemini API 추가 약관](https://ai.google.dev/gemini-api/terms)을 확인하고, 생성 답변을 법률 자문으로 의존하지 않도록 안내하세요.
+배포 후 Google OAuth의 승인된 JavaScript 원본에 Render의 origin(예: `https://ilteobeom-invite-preview.onrender.com`)을 추가하고, Supabase의 Site URL 및 Redirect URLs에도 같은 Render 주소를 추가해야 합니다. Render 주소는 Render 제공 도메인이며 사용자 소유 도메인과는 다릅니다.
+
+서버는 계정별 하루 **10회**, 전체 합산 하루 **30회**, 사용자별 분당 **5회** 질문을 제한합니다. 일일 한도는 환경변수 `APP_DAILY_CHAT_LIMIT`, `APP_GLOBAL_DAILY_CHAT_LIMIT`으로 바꿀 수 있습니다. Gemini 프로젝트의 자체 사용 한도가 더 낮으면 해당 제한이 먼저 적용됩니다. 로그인과 앱 한도 설정은 Gemini API 약관을 대신하지 않습니다. 사용 전 [Gemini API 추가 약관](https://ai.google.dev/gemini-api/terms)과 [요금·데이터 사용 안내](https://ai.google.dev/gemini-api/docs/pricing)를 확인하세요.
+
+## 개인정보와 사용상 주의
+
+- 질문 텍스트는 임베딩 검색을 위해 Gemini로 전송되고, 답변 생성 시 질문과 검색된 문서 발췌가 Gemini로 전송됩니다. 자료를 등록할 때는 PDF에서 추출한 텍스트도 Gemini 임베딩 API에 전송됩니다.
+- 채팅 기록은 서버나 Supabase가 아닌 현재 기기·브라우저의 `localStorage`에 저장됩니다. 같은 기기에서도 브라우저 데이터를 지우면 대화가 사라지고, 다른 기기와 동기화되지 않습니다.
+- 법령 문서·청크·벡터와 질문 사용량은 연결된 Supabase에 저장됩니다. Google 로그인 계정은 Supabase Auth에서 관리됩니다.
+- Gemini 무료 등급은 입력·출력이 Google 제품 개선에 사용되거나 사람 검토 대상이 될 수 있습니다. 민감한 개인정보, 회사 기밀, 실제 분쟁의 식별 정보를 입력하지 마세요. [Google의 요금 및 데이터 사용 안내](https://ai.google.dev/gemini-api/docs/pricing)
+- 이 프로젝트는 학습용 참고 도구입니다. 법률 자문이나 개별 사건의 법적 판단을 대신하지 않습니다. 답변에 표시된 근거와 국가법령정보센터의 현행 법령을 직접 확인하세요.
 
 ## 디렉터리 구조
 
