@@ -76,6 +76,18 @@ function userFacingError(error) {
   return message.slice(0, 400);
 }
 
+function describeServerError(error) {
+  if (error instanceof Error) return `${error.name}: ${error.message}`;
+  if (error && typeof error === "object") {
+    const fields = ["code", "message", "details", "hint", "status", "statusText"];
+    const details = fields
+      .filter((field) => typeof error[field] === "string" && error[field])
+      .map((field) => `${field}=${error[field]}`);
+    if (details.length) return details.join(" | ");
+  }
+  return "오류 객체에 메시지 필드가 없습니다.";
+}
+
 app.use(express.static(__dirname));
 app.use(express.json({ limit: "20kb" }));
 
@@ -136,6 +148,7 @@ app.post("/api/chat", requireAllowedUser, async (request, response) => {
 
   let userQuotaReserved = false;
   let globalQuotaReserved = false;
+  let failureStage = "전체 질문 한도 예약";
   try {
     const { data: globalQuotaAvailable, error: globalQuotaError } = await getSupabaseClient().rpc("consume_global_daily_chat_quota", {
       p_daily_limit: globalDailyChatLimit,
@@ -146,6 +159,7 @@ app.post("/api/chat", requireAllowedUser, async (request, response) => {
     }
     globalQuotaReserved = true;
 
+    failureStage = "계정별 질문 한도 예약";
     const { data: quotaAvailable, error: quotaError } = await getSupabaseClient().rpc("consume_daily_chat_quota", {
       p_user_id: request.authUser.id,
       p_daily_limit: dailyChatLimit,
@@ -162,7 +176,9 @@ app.post("/api/chat", requireAllowedUser, async (request, response) => {
     }
     userQuotaReserved = true;
 
+    failureStage = "Gemini 질문 임베딩 생성";
     const [queryEmbedding] = await embedTexts([question], "RETRIEVAL_QUERY", "근로기준법 질문");
+    failureStage = "Supabase 벡터 검색";
     const { data: sources, error } = await getSupabaseClient().rpc("match_law_chunks", {
       query_embedding: queryEmbedding,
       match_threshold: 0.25,
@@ -174,6 +190,7 @@ app.post("/api/chat", requireAllowedUser, async (request, response) => {
     const documentIds = [...new Set(retrievedSources.map((source) => source.document_id).filter(Number.isInteger))];
     let documentsById = new Map();
     if (documentIds.length) {
+      failureStage = "Supabase 문서 정보 조회";
       const { data: documents, error: documentsError } = await getSupabaseClient()
         .from("law_documents")
         .select("id, title, source_url")
@@ -181,6 +198,7 @@ app.post("/api/chat", requireAllowedUser, async (request, response) => {
       if (documentsError) throw documentsError;
       documentsById = new Map((documents ?? []).map((document) => [document.id, document]));
     }
+    failureStage = "Gemini 답변 생성";
     const result = await answerFromSources(question, retrievedSources.slice(0, 5));
     if (result.status !== "answer") {
       userQuotaReserved = false;
@@ -222,7 +240,7 @@ app.post("/api/chat", requireAllowedUser, async (request, response) => {
         // Keep the original chat error if global quota cleanup fails.
       }
     }
-    console.error("RAG 답변 생성 실패:", error instanceof Error ? error.message : "알 수 없는 오류");
+    console.error(`RAG 답변 생성 실패 (${failureStage}):`, describeServerError(error));
     return response.status(500).json({
       error: userFacingError(error),
     });
