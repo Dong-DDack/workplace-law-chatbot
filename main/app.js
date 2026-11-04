@@ -4,11 +4,95 @@ const messages = document.querySelector("#messages");
 const welcome = document.querySelector("#welcome");
 const chatScroll = document.querySelector("#chatScroll");
 const toast = document.querySelector("#toast");
+const authGate = document.querySelector("#authGate");
+const authMessage = document.querySelector("#authMessage");
+const googleLoginButton = document.querySelector("#googleLogin");
+const appShell = document.querySelector("#appShell");
 
 let toastTimer;
-const conversationStorageKey = "workplace-law-chatbot.conversations.v1";
-let conversations = loadConversations();
+const conversationStoragePrefix = "workplace-law-chatbot.conversations.v1";
+let conversationStorageKey = conversationStoragePrefix;
+let authClient = null;
+let conversations = [];
 let activeConversationId = null;
+
+function showAuthGate(message) {
+  authGate.hidden = false;
+  appShell.hidden = true;
+  authMessage.textContent = message || "승인된 Google 계정으로 로그인해 주세요.";
+}
+
+async function authenticatedFetch(url, options = {}) {
+  const { data: { session } } = await authClient.auth.getSession();
+  if (!session) throw new Error("로그인이 필요해요. 페이지를 새로고침해 주세요.");
+  const headers = new Headers(options.headers || {});
+  headers.set("Authorization", `Bearer ${session.access_token}`);
+  const response = await fetch(url, { ...options, headers });
+  if (response.status === 401) {
+    await authClient.auth.signOut();
+    showAuthGate("로그인 정보가 만료됐어요. 다시 로그인해 주세요.");
+  }
+  return response;
+}
+
+async function initializeAuthentication() {
+  try {
+    const configResponse = await fetch("/api/auth/config");
+    const config = await configResponse.json();
+    if (!configResponse.ok) throw new Error(config.error || "로그인 설정을 불러오지 못했어요.");
+    if (!window.supabase?.createClient) throw new Error("로그인 라이브러리를 불러오지 못했어요. 네트워크를 확인해 주세요.");
+
+    authClient = window.supabase.createClient(config.supabaseUrl, config.publishableKey);
+    googleLoginButton.disabled = false;
+    googleLoginButton.addEventListener("click", async () => {
+      googleLoginButton.disabled = true;
+      authMessage.textContent = "Google 로그인 페이지로 이동합니다…";
+      const { error } = await authClient.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.origin, queryParams: { prompt: "select_account" } },
+      });
+      if (error) {
+        googleLoginButton.disabled = false;
+        authMessage.textContent = `로그인을 시작하지 못했어요: ${error.message}`;
+      }
+    });
+
+    const { data: { session }, error } = await authClient.auth.getSession();
+    if (error) throw error;
+    if (!session) {
+      showAuthGate("초대된 Google 계정으로 로그인해 주세요.");
+      return;
+    }
+
+    const verification = await fetch("/api/auth/me", {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    const result = await verification.json();
+    if (!verification.ok) {
+      await authClient.auth.signOut();
+      showAuthGate(result.error || "이 계정은 아직 초대되지 않았어요.");
+      return;
+    }
+
+    const user = result.user;
+    conversationStorageKey = `${conversationStoragePrefix}.${user.id}`;
+    conversations = loadConversations();
+    appShell.hidden = false;
+    authGate.hidden = true;
+    document.querySelector("#accountEmail").textContent = user.email || "";
+    document.querySelector("#signOut").addEventListener("click", async () => {
+      await authClient.auth.signOut();
+      window.location.reload();
+    }, { once: true });
+    renderConversationList();
+    if (conversations.length) {
+      const latest = [...conversations].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))[0];
+      showConversation(latest);
+    }
+  } catch (error) {
+    showAuthGate(error instanceof Error ? error.message : "로그인을 준비하지 못했어요.");
+  }
+}
 
 function loadConversations() {
   try {
@@ -272,7 +356,7 @@ async function submitQuestion(value = input.value) {
   addTyping();
   chatScroll.scrollTop = chatScroll.scrollHeight;
   try {
-    const response = await fetch("/api/chat", {
+    const response = await authenticatedFetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ question }),
@@ -429,7 +513,7 @@ async function openLibrary() {
   if (libraryLoaded) return;
   libraryContent.innerHTML = '<div class="preview-loading"><span class="loading-spinner"></span> 등록 자료를 불러오고 있어요…</div>';
   try {
-    const response = await fetch("/api/documents");
+    const response = await authenticatedFetch("/api/documents");
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || "자료 목록을 가져오지 못했습니다.");
     renderLibrary(result.documents || []);
@@ -450,12 +534,6 @@ document.querySelector("#closeLibrary").addEventListener("click", closeLibrary);
 libraryOverlay.addEventListener("click", (event) => {
   if (event.target === libraryOverlay) closeLibrary();
 });
-
-renderConversationList();
-if (conversations.length) {
-  const latest = [...conversations].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))[0];
-  showConversation(latest);
-}
 
 const previewOverlay = document.querySelector("#previewOverlay");
 const previewContent = document.querySelector("#previewContent");
@@ -501,7 +579,7 @@ async function openDocumentPreview() {
   if (previewLoaded) return;
   previewContent.innerHTML = '<div class="preview-loading"><span class="loading-spinner"></span> PDF에서 텍스트와 조문을 읽고 있어요…</div>';
   try {
-    const response = await fetch("/api/documents/labor-law/preview");
+    const response = await authenticatedFetch("/api/documents/labor-law/preview");
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "PDF를 읽지 못했습니다.");
     renderDocumentPreview(data);
@@ -529,3 +607,5 @@ document.addEventListener("keydown", (event) => {
     startNewConversation();
   }
 });
+
+await initializeAuthentication();

@@ -38,6 +38,92 @@ grant usage on schema extensions to service_role;
 grant select, insert, update, delete on public.law_documents, public.law_chunks to service_role;
 grant usage, select on all sequences in schema public to service_role;
 
+create table if not exists public.chat_usage_daily (
+  user_id uuid not null,
+  usage_date date not null,
+  request_count integer not null default 0 check (request_count >= 0),
+  primary key (user_id, usage_date)
+);
+
+alter table public.chat_usage_daily enable row level security;
+grant select, insert, update, delete on public.chat_usage_daily to service_role;
+
+create or replace function public.consume_daily_chat_quota(
+  p_user_id uuid,
+  p_daily_limit integer
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  consumed_count integer;
+begin
+  insert into public.chat_usage_daily (user_id, usage_date, request_count)
+  values (p_user_id, (timezone('Asia/Seoul', now()))::date, 1)
+  on conflict (user_id, usage_date) do update
+    set request_count = public.chat_usage_daily.request_count + 1
+    where public.chat_usage_daily.request_count < greatest(p_daily_limit, 1)
+  returning request_count into consumed_count;
+
+  return consumed_count is not null;
+end;
+$$;
+
+create or replace function public.release_daily_chat_quota(p_user_id uuid)
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  update public.chat_usage_daily
+  set request_count = greatest(request_count - 1, 0)
+  where user_id = p_user_id
+    and usage_date = (timezone('Asia/Seoul', now()))::date;
+$$;
+
+create or replace function public.consume_global_daily_chat_quota(p_daily_limit integer)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  consumed_count integer;
+begin
+  insert into public.chat_usage_daily (user_id, usage_date, request_count)
+  values ('00000000-0000-0000-0000-000000000000', (timezone('Asia/Seoul', now()))::date, 1)
+  on conflict (user_id, usage_date) do update
+    set request_count = public.chat_usage_daily.request_count + 1
+    where public.chat_usage_daily.request_count < greatest(p_daily_limit, 1)
+  returning request_count into consumed_count;
+
+  return consumed_count is not null;
+end;
+$$;
+
+create or replace function public.release_global_daily_chat_quota()
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  update public.chat_usage_daily
+  set request_count = greatest(request_count - 1, 0)
+  where user_id = '00000000-0000-0000-0000-000000000000'
+    and usage_date = (timezone('Asia/Seoul', now()))::date;
+$$;
+
+revoke all on function public.consume_daily_chat_quota(uuid, integer) from public, anon, authenticated;
+revoke all on function public.release_daily_chat_quota(uuid) from public, anon, authenticated;
+revoke all on function public.consume_global_daily_chat_quota(integer) from public, anon, authenticated;
+revoke all on function public.release_global_daily_chat_quota() from public, anon, authenticated;
+grant execute on function public.consume_daily_chat_quota(uuid, integer) to service_role;
+grant execute on function public.release_daily_chat_quota(uuid) to service_role;
+grant execute on function public.consume_global_daily_chat_quota(integer) to service_role;
+grant execute on function public.release_global_daily_chat_quota() to service_role;
+
 create or replace function public.match_law_chunks(
   query_embedding extensions.vector(768),
   match_threshold real,

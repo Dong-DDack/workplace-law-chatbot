@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: ilteobeom-private-preview
+    name: ilteobeom-invite-preview
     runtime: node
     plan: free
     buildCommand: cd main && npm ci
@@ -19,7 +19,11 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
-      - key: APP_ACCESS_USERNAME
-        value: tester
-      - key: APP_ACCESS_PASSWORD
+      - key: SUPABASE_PUBLISHABLE_KEY
         sync: false
+      - key: APP_ALLOWED_EMAILS
+        sync: false
+      - key: APP_DAILY_CHAT_LIMIT
+        value: "10"
+      - key: APP_GLOBAL_DAILY_CHAT_LIMIT
+        value: "30"

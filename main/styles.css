@@ -15,3 +15,19 @@
 .clear-conversations{align-self:flex-start;margin:7px 0 10px 8px;border:0;background:transparent;color:#9a6c67;padding:5px 3px;font:500 9px/1.4 "DM Sans","Noto Sans KR",sans-serif;cursor:pointer}.clear-conversations:hover{color:#8b4740;text-decoration:underline}
 @media(max-width:720px){.conversation-more{opacity:1}}
 .conversation-menu{position:fixed;right:auto;bottom:auto;z-index:60}
+.app-shell[hidden],.auth-gate[hidden]{display:none}
+.auth-gate{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 18%,#e8f1e7 0,transparent 35%),#f7f8f6}
+.auth-card{width:min(100%,420px);padding:34px 32px 28px;border:1px solid #e4e9e2;border-radius:18px;background:#fff;box-shadow:0 18px 60px #25392312;text-align:center}
+.auth-brand{margin:0 auto 17px}
+.auth-eyebrow{margin:0 0 9px;color:#63836b;font-size:10px;font-weight:700;letter-spacing:.12em}
+.auth-card h1{font-size:25px;letter-spacing:-.05em}
+.auth-copy{margin:10px 0 23px;color:#858c83;font-size:12px;line-height:1.7}
+.google-login-button{width:100%;min-height:44px;border:1px solid #dfe5dd;border-radius:9px;background:#fff;color:#303730;font:600 12px "DM Sans","Noto Sans KR",sans-serif;cursor:pointer}
+.google-login-button:hover:not(:disabled){border-color:#b7cbb8;background:#f8fbf7}
+.google-login-button:disabled{color:#a1a69e;background:#f5f6f4;cursor:not-allowed}
+.auth-message{min-height:20px;margin:13px 0 0;color:#6e786c;font-size:10px;line-height:1.6}
+.auth-footnote{margin:20px 0 0;padding-top:14px;border-top:1px solid #eef0ec;color:#9a9f97;font-size:9px;line-height:1.7}
+.account-email{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#778076;font-size:9px}
+.sign-out-button{border:1px solid #e1e5df;border-radius:7px;background:#fff;color:#697168;padding:6px 9px;font:500 9px "DM Sans","Noto Sans KR",sans-serif;cursor:pointer}
+.sign-out-button:hover{background:#f1f5ef;color:#405744}
+@media(max-width:760px){.auth-card{padding:29px 23px 24px}.account-email{display:none}.sign-out-button{padding:5px 7px;font-size:8px}}
